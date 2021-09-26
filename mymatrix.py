@@ -33,7 +33,21 @@ class MyMatrix:
                 ab[i][j] = self._dot(A[i], bt[j])
 
         return MyMatrix(ab)
-
+    
+    def __pow__(self, A, n):
+	"Takes in a matrix A and raises it to the nth power"
+	if n<1:
+	    print("error: power must be greater than or equal to 1")
+	    return None
+	elif n.is_integer()==false:
+	    print("error: power must be an interger")
+	    return None
+	else:
+	    self.B=self.A
+	    for i in range(n-1):
+	        self.B=mul(self.B,self.A)
+	return self.B
+	    
     def __len__(self):
         return len(self.A)
 
