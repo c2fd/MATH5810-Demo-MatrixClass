@@ -206,3 +206,42 @@ if __name__  == "__main__":
     myB = MyMatrix([1,1,-1])
     myX = myA.solveUpperTri(myB)
     print(myX)
+    
+    
+    
+ # Start: KC Gubler Edit
+    
+from sympy import Symbol, Derivative
+import math
+import sympy as sym
+
+x = Symbol('x')
+
+y = Symbol('y')
+
+cos = Symbol('cos()')
+
+sin = Symbol('sin()')
+
+math.e = Symbol('e')
+
+def jacobian(u,v):
+
+   # u = 2*x*y**2 + 4*y**3 + x
+   # v = 2*y**5 + x*y
+
+    dxdu = Derivative(u, x)
+    dydu = Derivative(u, y)
+    dxdv = Derivative(v, x)
+    dydv = Derivative(v, y)
+
+    jacobian = dxdu*dydv - dxdv*dydu
+    jacobian = jacobian.doit()
+
+    return jacobian
+
+
+jacobian(sym.sin(x), (2*y**5 + x*y))
+jacobian(math.e**x, y)
+
+# End: KC Gubler Edit
