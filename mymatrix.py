@@ -12,41 +12,55 @@ class MyMatrix:
         self.A = A
   
     def __str__(self):
-        pass
-  
-    def __mul__(self, A, B):
+        return ''.join([ str(self[i])+'\n' for i in range(len(self)) ]) 
+        # not pretty, but it's better than nothing.
+ 
+
+    def __mul__(self, other):
         """
+        Either scalar multiplication, or:
+
         Takes in two MyMatrix objects A and B.
         Returns AB as a MyMatrix object. I found it made the most
         sense to code this by transposing B and then simply dotting
         the rows of A and B^T, but if there's a more efficient
         way that would be ideal.
         """
-        if len(A[0]) != len(B):
-            return None
+        if isinstance(other,float) or isinstance(other,int):
+            return MyMatrix([[other*row[i] for i in range(len(row))  ] for row in self ])
+        elif isinstance(other,MyMatrix):
+            if len(self[0]) != len(other):
+                return None
 
-        ab = [[0 for j in range(len(B[0]))] for i in range(len(A))]
-        bt = self.transpose(B)
+            ab = [[0 for j in range(len(other[0]))] for i in range(len(self))]
+            bt = other.transpose()
 
-        for i in range(len(A)):
-            for j in range(len(bt)):
-                ab[i][j] = self._dot(A[i], bt[j])
+            for i in range(len(self)):
+                for j in range(len(bt)):
+                    ab[i][j] = MyMatrix(self[i])._dot(bt[j]) #not very efficient
 
-        return MyMatrix(ab)
+            return MyMatrix(ab)
+
+
+    def __rmul__(self,other):
+        if isinstance(other,float) or isinstance(other,int):
+            return self*other
+        elif isinstance(other,MyMatrix):
+            return other*self
     
     def __pow__(self, A, n):
-	"Takes in a matrix A and raises it to the nth power"
-	if n<1:
-	    print("error: power must be greater than or equal to 1")
-	    return None
-	elif n.is_integer()==false:
-	    print("error: power must be an interger")
-	    return None
-	else:
-	    self.B=self.A
-	    for i in range(n-1):
-	        self.B=mul(self.B,self.A)
-	return self.B
+        "Takes in a matrix A and raises it to the nth power"
+        if n<1:
+            print("error: power must be greater than or equal to 1")
+            return None
+        elif n.is_integer()==false:
+            print("error: power must be an interger")
+            return None
+        else:
+            self.B=self.A
+            for i in range(n-1):
+                self.B=mul(self.B,self.A)
+        return self.B
 	    
     def __len__(self):
         return len(self.A)
@@ -54,20 +68,20 @@ class MyMatrix:
     def __getitem__(self, row):
         return self.A[row]
 
-    def transpose(self, A):
+    def transpose(self):
         """
         Takes in A, a MyMatrix object.
         Returns the transpose of A as a MyMatrix object.
         """
-        at = [[0 for j in range(len(A))] for i in range(len(A[0]))]
+        at = [[0 for j in range(len(self))] for i in range(len(self[0]))]
 
-        for i in range(len(A)):
-            for j in range(len(A[0])):
-                at[j][i] = A[i][j]
+        for i in range(len(self)):
+            for j in range(len(self[0])):
+                at[j][i] = self[i][j]
 
         return MyMatrix(at)
 
-    def _dot(self, a, b):
+    def _dot(self, other):
         """
         Returns the dot product of two vectors (represented
         as 1-D arrays or lists). Used primarily in matrix
@@ -75,13 +89,13 @@ class MyMatrix:
         made 'private' as this isn't a MyVector class.
         """
         ab = 0
-        for i in range(len(a)):
-            ab += (a[i] * b[i])
+        for i in range(len(self)):
+            ab += (self[i] * other[i])
 
         return ab
 
   
-    def __add__(self, x, y):
+    def __add__(self, other):
         """
         x, y are MyMatrix object, the return is also MyMatrix object.
         here, I assume __getitem__ is defined
@@ -89,11 +103,11 @@ class MyMatrix:
     	which is like this [[], []]
         """
         sums = []
-        for i in range(len(x)):
+        for i in range(len(self)):
         	row = []
-        	for j in range(len(y)):
+        	for j in range(len(other)):
         		# row.append(x.index(i, j) + y.index(i, j))
-        		row.append(x[i][j] + y[i][j])
+        		row.append(self[i][j] + other[i][j])
         	sums.append(row)
     
         return MyMatrix(sums)
@@ -104,7 +118,7 @@ class MyMatrix:
         zeroed out.
         """
         au = self
-        k = self.transpose(au)
+        k = au.transpose()
         k2 = len(k)
         r = 1
         for p in range(0, len(self)):
@@ -181,7 +195,7 @@ class MyMatrix:
         If the length of the matrix and vector are not correct, it will return none.
         """
         
-        if ((len(b) != (len(self.A[0])))):
+        if ((len(b) != (len(self.A[0])))): 
             return None;
     
         myNewVector = [0 for i in range(len(self.A))]
@@ -192,14 +206,48 @@ class MyMatrix:
             for j in range(len(self.A)-1,i, -1):
                 myDiff = (self.A[i][j]*myNewVector[j])
                 mySum = mySum - myDiff
-    
+            
             myNewVector[i] = mySum/self.A[i][i]
     
         return myNewVector
 
+    def minorMatrix(self,i,j):
+        """
+        Finds the (i,j)th minor matrix of self. That is, the ith row and jth column are gone.
+        """
+        return MyMatrix([row[:j] + row[j+1:] for row in (self[:i] + self[i+1:])])
+
+    def det(self):
+        """
+        Input must be a square matrix. Returns the determinant of self.
+        """
+        if len(self) != len(self[0]): #assuming all sublists have same length
+            print("ERROR: Cannot take determinant of non-square matrix!")
+            return math.nan
+        if len(self) == 2:
+            return self[0][0]*self[1][1] - self[0][1]*self[1][0]
+        return sum([ ((-1)**(i)*self[0][i])*self.minorMatrix(0,i).det() for i in range(len(self)) ])
+        
+
+
 
 if __name__  == "__main__":
     # some test examples
+
+    A = MyMatrix([ [1,2,3,4],[1,-1,-1,5],[8,0,4,-1],[4,5,3,1] ])
+    B = MyMatrix([ [1,2,3,1],[0,3,1,3],[0,0,1,1],[0,0,0,9] ])
+    b = MyMatrix([1,1,1,1])
+    print('A is:\n',A)
+    print('B is:\n',B)
+    print('A+B is:\n',A+B)
+    print('A*B is:\n',A*B)
+    print('Lower triangle of A is:\n',A.tri_lower())
+    print('1-norm of A is:\n',A.norm1())
+    print('Infinity norm of A is:\n',A.norm_infinity())
+    print('Frobenius norm of A is:\n',A.normF())
+    print('Solution of Ax = b is:\n',A.solveUpperTri(b))
+    print('Determinant of A is:\n',A.det())
+
     A1 = MyMatrix([[1,2,3],[3,4,5]])
     B1 = MyMatrix([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
     myA = MyMatrix([[1,2,3],[0,-1,-1],[0,0,-1]])
@@ -209,39 +257,40 @@ if __name__  == "__main__":
     
     
     
- # Start: KC Gubler Edit
-    
-from sympy import Symbol, Derivative
-import math
-import sympy as sym
+    # Start: KC Gubler Edit
 
-x = Symbol('x')
+    from sympy import Symbol, Derivative
+    import math
+    import sympy as sym
 
-y = Symbol('y')
+    x = Symbol('x')
 
-cos = Symbol('cos()')
+    y = Symbol('y')
 
-sin = Symbol('sin()')
+    cos = Symbol('cos()')
 
-math.e = Symbol('e')
+    sin = Symbol('sin()')
 
-def jacobian(u,v):
+    math.e = Symbol('e')
 
-   # u = 2*x*y**2 + 4*y**3 + x
-   # v = 2*y**5 + x*y
+    def jacobian(u,v):
 
-    dxdu = Derivative(u, x)
-    dydu = Derivative(u, y)
-    dxdv = Derivative(v, x)
-    dydv = Derivative(v, y)
+       # u = 2*x*y**2 + 4*y**3 + x
+       # v = 2*y**5 + x*y
 
-    jacobian = dxdu*dydv - dxdv*dydu
-    jacobian = jacobian.doit()
+        dxdu = Derivative(u, x)
+        dydu = Derivative(u, y)
+        dxdv = Derivative(v, x)
+        dydv = Derivative(v, y)
 
-    return jacobian
+        jacobian = dxdu*dydv - dxdv*dydu
+        jacobian = jacobian.doit()
+
+        return jacobian
 
 
-jacobian(sym.sin(x), (2*y**5 + x*y))
-jacobian(math.e**x, y)
+    jacobian(sym.sin(x), (2*y**5 + x*y))
+    jacobian(math.e**x, y)
 
-# End: KC Gubler Edit
+    # End: KC Gubler Edit
+
