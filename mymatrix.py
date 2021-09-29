@@ -41,12 +41,27 @@ class MyMatrix:
 
             return MyMatrix(ab)
 
+
     def __rmul__(self,other):
         if isinstance(other,float) or isinstance(other,int):
             return self*other
         elif isinstance(other,MyMatrix):
             return other*self
-
+    
+    def __pow__(self, A, n):
+        "Takes in a matrix A and raises it to the nth power"
+        if n<1:
+            print("error: power must be greater than or equal to 1")
+            return None
+        elif n.is_integer()==false:
+            print("error: power must be an interger")
+            return None
+        else:
+            self.B=self.A
+            for i in range(n-1):
+                self.B=mul(self.B,self.A)
+        return self.B
+	    
     def __len__(self):
         return len(self.A)
 
@@ -218,6 +233,7 @@ class MyMatrix:
 
 if __name__  == "__main__":
     # some test examples
+
     A = MyMatrix([ [1,2,3,4],[1,-1,-1,5],[8,0,4,-1],[4,5,3,1] ])
     B = MyMatrix([ [1,2,3,1],[0,3,1,3],[0,0,1,1],[0,0,0,9] ])
     b = MyMatrix([1,1,1,1])
@@ -231,3 +247,50 @@ if __name__  == "__main__":
     print('Frobenius norm of A is:\n',A.normF())
     print('Solution of Ax = b is:\n',A.solveUpperTri(b))
     print('Determinant of A is:\n',A.det())
+
+    A1 = MyMatrix([[1,2,3],[3,4,5]])
+    B1 = MyMatrix([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+    myA = MyMatrix([[1,2,3],[0,-1,-1],[0,0,-1]])
+    myB = MyMatrix([1,1,-1])
+    myX = myA.solveUpperTri(myB)
+    print(myX)
+    
+    
+    
+    # Start: KC Gubler Edit
+
+    from sympy import Symbol, Derivative
+    import math
+    import sympy as sym
+
+    x = Symbol('x')
+
+    y = Symbol('y')
+
+    cos = Symbol('cos()')
+
+    sin = Symbol('sin()')
+
+    math.e = Symbol('e')
+
+    def jacobian(u,v):
+
+       # u = 2*x*y**2 + 4*y**3 + x
+       # v = 2*y**5 + x*y
+
+        dxdu = Derivative(u, x)
+        dydu = Derivative(u, y)
+        dxdv = Derivative(v, x)
+        dydv = Derivative(v, y)
+
+        jacobian = dxdu*dydv - dxdv*dydu
+        jacobian = jacobian.doit()
+
+        return jacobian
+
+
+    jacobian(sym.sin(x), (2*y**5 + x*y))
+    jacobian(math.e**x, y)
+
+    # End: KC Gubler Edit
+
