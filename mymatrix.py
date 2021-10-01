@@ -227,6 +227,15 @@ class MyMatrix:
         if len(self) == 2:
             return self[0][0]*self[1][1] - self[0][1]*self[1][0]
         return sum([ ((-1)**(i)*self[0][i])*self.minorMatrix(0,i).det() for i in range(len(self)) ])
+
+    def trace(self):
+        """
+        Input must be a square matrix. Return the diagonal sum of self.
+        """
+        if len(self) != len(self[0]):
+            print("ERROR: Cannot take trace of non-square matrix!")
+            return math.nan
+        return sum(self[i][i] for i in range(len(self)))
         
 
 
